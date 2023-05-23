@@ -14,7 +14,11 @@ export const userSlice = createSlice({
         loginUser : (state, action)=> {
             console.log(action.payload)
             // action.payload로 전달할때 {name, email, photo,uid}
-            state = action.payload;
+            
+            // state의 값을 전체로 바꾸는 것은 리덕스 툴킷에서
+            // 막아두었으므로, 전체 값을 바꿀때는 return으로 수정
+            // *state의 속성값을 바꿀때는 직접접근해서 바꿀수 있다
+            return action.payload;
         },
         logoutUser : ()=> {}
     },
