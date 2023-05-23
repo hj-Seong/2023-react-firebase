@@ -1,4 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { signOut } from 'firebase/auth';
+import { auth } from '../database/firebase';
 
 export const userSlice = createSlice({
     name : 'user',
@@ -20,9 +22,21 @@ export const userSlice = createSlice({
             // *state의 속성값의 일부를 바꿀 때는 직접접근해서 바꿀 수 있다
             return action.payload;
         },
-        logoutUser : ()=> {}
+        logoutUser : ()=> {
+            return null;
+        }
     },
 })
 
-export const { loginUser } = userSlice.actions;
+// 로그아웃을 사용하기위한 리덕스 미들웨어
+export const logout = () => (dispatch) => {
+    signOut(auth).then(() => {
+        // Sign-out successful.
+        dispatch( logoutUser() );
+      }).catch((error) => {
+        // An error happened.
+      });
+} 
+
+export const { loginUser, logoutUser } = userSlice.actions;
 export default userSlice.reducer;

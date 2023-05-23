@@ -47,6 +47,14 @@ export default function LoginForm() {
     .then((userCredential) => {
       // Signed in
       const user = userCredential.user;
+
+      dispatch(loginUser({
+        name :user.displayName,
+        email : user.email,
+        photo : user.photoURL,
+        uid : user.uid
+      }))
+
       navigate('/main')
     })
     .catch((error) => {
@@ -54,7 +62,6 @@ export default function LoginForm() {
       const errorMessage = error.message;
       navigate('/')
     });
-  
   }
 
   return (
