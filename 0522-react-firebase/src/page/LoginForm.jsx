@@ -2,10 +2,15 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'fire
 import { auth } from '../database/firebase'; 
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import Button from '../styledComponents/Button';
+
+import { useDispatch } from 'react-redux';
+import { loginUser } from '../slice/userSlice';
 
 export default function LoginForm() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] =useState("")
@@ -18,6 +23,13 @@ export default function LoginForm() {
     .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
+        // 가져온값을 리덕스 툴킷에 담아서 사용
+        dispatch(loginUser({
+          name :user.displayName,
+          email : user.email,
+          photo : user.photoURL,
+          uid : user.uid
+        }))
         navigate('/main')
     })
     .catch((error) => {
