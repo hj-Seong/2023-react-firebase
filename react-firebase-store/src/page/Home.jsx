@@ -40,7 +40,8 @@ export default function Home() {
   useEffect(()=>{
     const userData = sessionStorage.getItem('user');
     // 문자열에서 객체로 바꿔서 사용
-    dispatch(userLogin(JSON.parse(userData)));
+    if(userData) // userData값이 있을 때 저장 : 한번 로그인했다
+      dispatch(userLogin(JSON.parse(userData)));
 
   },[])
   
@@ -49,6 +50,8 @@ export default function Home() {
     signOut(auth).then(() => {
       // Sign-out successful.
       dispatch(userLogout());
+      // 세션 전체 삭제
+      sessionStorage.clear();
 
     }).catch((error) => {
       // An error happened.
