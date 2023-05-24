@@ -30,6 +30,17 @@ export default function Login() {
           uid : user.uid,
           photo : user.photoURL
         }))
+
+        // 세션 스토리지에 값 저장하기
+        // 그 값을 문자로 만들어서 저장
+        const userData = {
+          name : user.displayName,
+          email : user.email,
+          uid : user.uid,
+          photo : user.photoURL
+        };
+        sessionStorage.setItem('user',JSON.stringify(userData))
+        
         navigate('/');
 
       }).catch((error) => {
