@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
 
 import { db } from '../database/firebase';
@@ -21,6 +21,18 @@ export default function FireStoreTest() {
   // 검색된 user값 
   const [searchUser, setSearchUser] = useState();
   
+
+  // 유저 uid값이 문서의 uid값일때, 문서의 값을 찾아올 수 있는지
+  useEffect(()=>{
+    async function getUserData () {
+      // doc()을 통해서 값을 찾을때, getDoc통해서 한개의 값을 들고옴
+      const querySnapshot = await getDoc(doc(db,'userList','k2pc7BpZYjWAdXPCQKb2IYCa5TD2'));
+      // 바로 값을 들고오므로 forEach사용X
+      console.log(querySnapshot.data())
+    }
+    getUserData()
+  },[])
+
 
   // 시작하자마자 값 가져오기
   useEffect(()=>{
