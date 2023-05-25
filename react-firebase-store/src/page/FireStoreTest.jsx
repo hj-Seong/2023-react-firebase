@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
 
 import { db } from '../database/firebase';
@@ -14,6 +14,12 @@ export default function FireStoreTest() {
 
   // 수정될 값 state
   const [updateFirst, setUpdateFirst] = useState();
+
+  // 검색할 last값
+  const [searchLast, setSearchLast] = useState();
+
+  // 검색된 user값 
+  const [searchUser, setSearchUser] = useState();
   
 
   // 시작하자마자 값 가져오기
@@ -78,6 +84,28 @@ export default function FireStoreTest() {
     getData()
   }
 
+  // 단일 쿼리를 이용하여 값 찾기
+  const onSearch = async () => {
+    // where를 하나를 이용한 단일 쿼리
+    // 문자열에서 특정 문자열을 찾을 수 없다
+    // 데이터를 세부적으로 사용 > 따로 서버를 만들어서 SQL또는 noSQL을 사용
+    const q = query(collection(db, "users"), 
+                    where("last", "==", searchLast),
+                    where("born", ">", 1953));
+    // 복합 쿼리문은 파이어베이스 콘솔에서 인덱스(색인)을 설정하고 쓸수 있다
+
+    // 작성한 쿼리 객체를 getDocs를 이용하여 가져옴
+    const querySnapshot = await getDocs(q);
+    let dataArray = []
+    querySnapshot.forEach((doc) => {
+      dataArray.push({
+        id : doc.id,
+        ...doc.data()
+      })
+    });
+    setSearchUser(dataArray)
+  }
+
   return (
     <div>
         <h3>파이어스토어의 값을 추가, 가져옴 확인</h3>
@@ -92,6 +120,18 @@ export default function FireStoreTest() {
             버튼을 누르면 파이어스토어에 값추가
         </button>
         <br />
+        <hr />
+        <label htmlFor="">last 검색</label>
+        <input type="text" onChange={(e)=>{setSearchLast(e.target.value)}}/>
+        <button onClick={ onSearch }>검색하기</button>
+        <hr />
+        {
+          // 검색결과 출력
+          searchUser && searchUser.map((user)=>(
+            <div>{user.last}, {user.born}, {user.first}</div>
+          ))
+        }
+        <hr />
         {
           users && users.map((user)=>(
             <div>
