@@ -1,12 +1,13 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 // 파이어 스토어
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { collection, addDoc, Timestamp, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from '../database/firebase'
 
 export default function BookComp() {
   const [title, setTitle] = useState("");
   const [writer, setWriter] = useState("");
+  const [books, setBooks] = useState();
 
   // 책 추가 메소드
   const addBook = async(e) => {
@@ -22,6 +23,8 @@ export default function BookComp() {
           writer : writer, //입력 받아오는 값
         });
         console.log("Document written with ID: ", docRef.id);
+        // 값이 제대로 추가 되었다면 실행
+        getBook();
       } catch (e) {
         // 어떤 오류가 발생했는지, 발생했다면 어떻게 처리할지
         console.error("Error adding document: ", e);
@@ -30,6 +33,46 @@ export default function BookComp() {
     setTitle("");
     setWriter("");
   }
+
+  // 책을 가져오는 메소드
+  const getBook = async()=>{
+    const querySnapshot = await getDocs(collection(db, "readingbooks"));
+    
+    // 가져온 컬렉션의 문서배열을 새로운 배열을 만들에서 저장
+    let array = [];
+    querySnapshot.forEach((doc) => {
+        array.push({
+            id : doc.id,
+            ...doc.data()
+        })
+        console.log(`${doc.id} => ${doc.data()}`);
+        // doc.data()객체 확인 > timestamp는 toDate를 통해 Date객체로 변환
+        console.dir(doc.data().startDate.toDate())
+    });
+    setBooks(array);
+  }
+
+  // 책을 삭제하는 메소드 
+  const deleteBook = async(id) => {
+    await deleteDoc(doc(db, "readingbooks", id));
+    getBook();
+  }
+
+
+  // 현재 컴포넌트가 실행됬을때 바로 출력
+  useEffect(()=>{
+    getBook();
+  },[])
+
+  // return 화면에 값을 출력하기 위한 함수
+  // 타임스탬프값을 넣으면 값을 변환해서 문자열로 return하는 함수
+  const printTime = (date) => {
+    const month = date.toDate().getMonth()+1;
+    const day = date.toDate().getDate();
+    return `${month}/${day}`;
+  }
+
+
   return (
     <div>
         <h3>readingbooks 컬렉션</h3>
@@ -51,10 +94,22 @@ export default function BookComp() {
             <p>메모없음 또는 메모</p>
         <hr />
             
-            <h4>추가날짜~읽는중/느낀점날짜 책 제목</h4>
-            <p>메모</p>
-            <button>감상문 적기</button>
-            <button>X</button>
+            {   // 외부에서 값을 가져오는 시간이 걸림 
+                books && books.map((book)=>(
+                    <div key={book.id}>
+                        <h4>
+                            { printTime(book.startDate) }
+                            ~ {book.done ? printTime(book.endDate) : "읽는중"} 
+                            {` `} {book.title}
+                        </h4>
+                        {
+                            book.done ? <p>{book.memo}</p>
+                                        : <button>감상문 적기</button>
+                        }
+                        <button onClick={ ()=>{ deleteBook(book.id) } }>X</button>
+                    </div>
+                ))
+            }
     </div>
   )
 }
