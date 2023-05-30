@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from 'react'
 
 // 파이어 스토어
-import { collection, addDoc, Timestamp, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, addDoc, Timestamp, getDocs, deleteDoc, doc, updateDoc, query, where } from "firebase/firestore";
 import { db } from '../database/firebase'
 
 export default function BookComp() {
   const [title, setTitle] = useState("");
   const [writer, setWriter] = useState("");
+
+  //검색하기 위한 제목
+  const [searchTitle, setSearchTitle] = useState("");
+  //검색된 책 배열
+  const [searchBooks, setSearchBooks] = useState();
+
+  // 천제 화면에 출력 될 책 배열
   const [books, setBooks] = useState();
 
   // 책 추가 메소드
@@ -58,6 +65,49 @@ export default function BookComp() {
     getBook();
   }
 
+  // 감상문을 추가하고 책의 값을 수정하는 메소드
+  const updateBook =  async(id) => {
+    const memo = prompt("느낀점을 입력하세요");
+
+    //memo의 값이 없을때 return을 실행하여 메소드 종료
+    if (!memo) 
+        return;
+
+    // 값이 있을때 아래 코드 실행 
+    const updateRef = doc(db, "readingbooks", id);
+    await updateDoc(updateRef, {
+        memo : memo,
+        done : true,
+        endDate : Timestamp.fromDate(new Date())
+    });
+    // 수정된 값 화면에 출력
+    getBook();
+  }
+
+  // 책 제목을 통해서 책을 찾는 메소드
+  const searchBook = async(e) => {
+    e.preventDefault();
+    const q = query(collection(db, "readingbooks"), where("title", "==", searchTitle));
+
+    // 배열에 담아서 사용
+    const querySnapshot = await getDocs(q);
+    let array = [];
+    
+    querySnapshot.forEach((doc) => {
+        array.push(
+            {
+                id : doc.id,
+                ...doc.data()
+            }
+        )
+        console.log(doc.id, " => ", doc.data());
+    });
+    // 찾은 정보값 화면에 출력
+    setSearchBooks(array)
+
+  }
+
+
 
   // 현재 컴포넌트가 실행됬을때 바로 출력
   useEffect(()=>{
@@ -85,13 +135,21 @@ export default function BookComp() {
             <button type='submit'>추가</button>
         </form>
         <hr />
-            <form>
-                <input type="text" />
+            <form onSubmit={ searchBook }>
+                <input type="text" 
+                    onChange={(e)=>{setSearchTitle(e.target.value)}}/>
                 <button type='submit'>읽은 책 검색하기</button>
             </form>
         <hr />
-            <h4>추가한 날짜 책 제목</h4>
-            <p>메모없음 또는 메모</p>
+            {
+                searchBooks && searchBooks.map((book)=>(
+                    <div>
+                        <h4>{printTime(book.startDate)} {book.title}</h4>
+                        <p>{ book.memo ? book.memo : "메모없음"}</p>
+                    </div>
+                ))
+            }
+
         <hr />
             
             {   // 외부에서 값을 가져오는 시간이 걸림 
@@ -104,7 +162,7 @@ export default function BookComp() {
                         </h4>
                         {
                             book.done ? <p>{book.memo}</p>
-                                        : <button>감상문 적기</button>
+                                        : <button onClick={()=>{ updateBook(book.id) }}>감상문 적기</button>
                         }
                         <button onClick={ ()=>{ deleteBook(book.id) } }>X</button>
                     </div>
