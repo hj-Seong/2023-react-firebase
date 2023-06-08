@@ -20,6 +20,7 @@ export default function BoardWriteForm() {
     // addDoc을 이용하면 id 값이 랜덤
     const docRef = await addDoc(collection(db, "boards"), {
         uid : user.uid,
+        email : user.email,
         title: title,
         content : content,
         writeTime : new Date()

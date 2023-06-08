@@ -1,4 +1,4 @@
-import { Timestamp, collection, getDocs } from 'firebase/firestore';
+import { Timestamp, collection, getDocs, orderBy, query } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom';
@@ -12,13 +12,15 @@ export default function Board() {
   useEffect(()=>{
     // boards 컬랙션의 값을 가져와서 사용
     const getBoards = async () => {
-        const querySnapshot = await getDocs(collection(db, "boards"));
+        const q = query(collection(db, "boards"), orderBy("writeTime","desc"));
+        const querySnapshot = await getDocs(q);
+
         // state사용하지 않은 값들은 업데이트시 화면에 표시X
         let dataArray = [];
         querySnapshot.forEach((doc) => {
             let data = {
                 id : doc.id,
-                uid : doc.data().uid,
+                email : doc.data().email,
                 title : doc.data().title,
                 writeTime : doc.data().writeTime
             }
@@ -44,8 +46,8 @@ export default function Board() {
             </Link>
             {
                 boards && boards.map((board)=>(
-                    <Link to =''>
-                        <li>{board.title}, {board.uid}, {}</li>
+                    <Link to ={`/board/${board.id}`} key={board.id}>
+                        <li>{board.title}, {board.email}, {board.writeTime.toDate().getHours()}:{board.writeTime.toDate().getMinutes()}</li>
                     </Link>
                 ))
             }
