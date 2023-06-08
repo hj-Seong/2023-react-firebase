@@ -5,6 +5,7 @@ import Board from './page/Board';
 import { useDispatch } from 'react-redux';
 import { loginUser } from './slice/userSlice';
 import { useEffect } from 'react';
+import BoardWriteForm from './page/BoardWriteForm';
 
 function App() {
 
@@ -23,6 +24,7 @@ function App() {
       <Routes>
         <Route path='/' element={<Main />}/>
         <Route path='/board' element={<Board />}/>
+        <Route path='/board-write-form' element={<BoardWriteForm />} />
       </Routes>
     </div>
   );
