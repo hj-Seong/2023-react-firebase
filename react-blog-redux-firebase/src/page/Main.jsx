@@ -1,27 +1,19 @@
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import React from 'react'
+import React, { useState } from 'react'
 import { auth, db } from '../database/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-export default function Main() {
-  
-  // 유저 추가 함수 - firestore 작성
-  // user {uid, email} 
-  const addUser = async(user) => {
-    await setDoc(doc(db, "users", user.uid), user);
-  }
+import { useSelector, useDispatch} from 'react-redux'
+import { checkUser, loginUser } from '../slice/userSlice';
 
-  // 유저 확인 함수 - firestore 작성
-  const checkUser = async(user) => {
-    const docRef = await getDoc(doc(db, "users", user.uid))
-    // exists() 함수는 getDoc을 통해 가져온 값이 있으면 true
-    // 없으면 false
-    if(!docRef.exists()) {
-        addUser(user);
-    }else {
-        console.log("가입되어 있습니다")
-    }
-  }
+export default function Main() {
+
+  // 화면에 보이기 위해 state사용
+  // 화면에 출력하고 공통으로 데이터를 사용하기위해 리덕스 사용
+  const user = useSelector((state)=>state.user);
+
+  const dispatch = useDispatch();
+
 
   // 구글 로그인 함수
   const onGoogleLogin = () => {
@@ -36,7 +28,7 @@ export default function Main() {
         console.dir(user);
         
         // 로그인했다면, uid를 확인후 firestore에 저장
-        checkUser({uid : user.uid, email : user.email});
+        dispatch(checkUser({uid : user.uid, email : user.email}))
 
     }).catch((error) => {
         // Handle Errors here.
@@ -53,7 +45,7 @@ export default function Main() {
     <div>
         <h3>Main</h3>
         <button onClick={onGoogleLogin}>구글로 로그인</button>
-        <h2>{}님 환영합니다</h2>
+        <h2>{user && user.email}님 환영합니다</h2>
     </div>
   )
 }
