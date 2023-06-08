@@ -6,6 +6,9 @@ export const userSlice = createSlice({
     // name은 반드시 문자열로 작성
     name : "user",
     initialState : {
+        // user속성 안에 {} 객체를 저장해서 사용할수 도 있다
+        // user : {email : "a@a" , uid : "asd"}
+        user : null,
         email : "",
         uid : null,
     },
@@ -19,11 +22,18 @@ export const userSlice = createSlice({
             // state 자체에 바로 값을 넣을수 없다
             // state = action.payload;
             // 값을 바로넣고 싶으면 return action.payload사용
+
+            // 로그인했을때 세션에 값 저장
+            // user라는 키에 리덕스에 들어갈 모든 내용 저장
+            sessionStorage.setItem('user',JSON.stringify(action.payload))
         },
         // 로그아웃했을때 state의 값을 바꾸는 리덕스
         logoutUser : (state)=>{
             state.uid = null;
             state.email = ""
+
+            // 세션에 저장된 정보 삭제
+            sessionStorage.removeItem('user');
         }
     }
 })

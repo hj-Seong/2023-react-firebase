@@ -1,10 +1,11 @@
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import React, { useState } from 'react'
+import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import React, { useEffect, useState } from 'react'
 import { auth, db } from '../database/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import { useSelector, useDispatch} from 'react-redux'
-import { checkUser, loginUser } from '../slice/userSlice';
+import { checkUser, loginUser, logoutUser } from '../slice/userSlice';
+import { Link } from 'react-router-dom';
 
 export default function Main() {
 
@@ -41,11 +42,30 @@ export default function Main() {
         // ...
     });
   }
+
+  // 로그아웃 버튼 - 구글
+  const onGoogleLogout = () => {
+    signOut(auth).then(() => {
+      // 리덕스에 있는 정보 삭제
+      dispatch(logoutUser())
+
+    }).catch((error) => {
+      // An error happened.
+    });
+  }
+
+
   return (
     <div>
         <h3>Main</h3>
-        <button onClick={onGoogleLogin}>구글로 로그인</button>
-        <h2>{user && user.email}님 환영합니다</h2>
+        {
+          user.uid ? <div>
+            <h2>{user && user.email}님 환영합니다</h2>
+            <button onClick={onGoogleLogout}>로그아웃</button>
+          </div> 
+          : <button onClick={onGoogleLogin}>구글로 로그인</button>
+        }
+        <Link to='/board'>게시물보러가기</Link>
     </div>
   )
 }
